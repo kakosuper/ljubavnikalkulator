@@ -10,11 +10,13 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_neumorphic_plus: ^3.5.0
+  flutter_typeahead: ^5.2.0
   http: ^1.6.0
   intl: ^0.20.2
   lottie: ^3.3.1
   provider: ^6.1.5+1
   url_launcher: ^6.3.2
+  sweph: ^3.2.1+2.10.3  # NASA/Swiss Ephemeris preciznost
 
 dev_dependencies:
   flutter_test:

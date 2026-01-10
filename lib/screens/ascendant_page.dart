@@ -1,8 +1,10 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
-import 'package:intl/intl.dart'; // Za formatiranje datuma
+import 'package:intl/intl.dart'; 
 import 'package:ljubavnikalkulator/engine/AstroEngine.dart';
 import '../helpers/translate_helper.dart';
 import 'package:lottie/lottie.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import '../services/astro_service.dart';
 
 class AscendantPage extends StatefulWidget {
   @override
@@ -10,10 +12,13 @@ class AscendantPage extends StatefulWidget {
 }
 
 class _AscendantPageState extends State<AscendantPage> {
+  final TextEditingController _cityController = TextEditingController();
+  String _selectedCity = "Beograd, Serbia";
+double _lat = 44.8125;
+double _lon = 20.4612;
   DateTime _selectedDate = DateTime(1995, 1, 1);
   TimeOfDay _selectedTime = const TimeOfDay(hour: 12, minute: 0);
 
-  // Funkcija za biranje datuma
   Future<void> _pickDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -26,7 +31,6 @@ class _AscendantPageState extends State<AscendantPage> {
     }
   }
 
-  // Funkcija za biranje vremena (Kružni sat)
   Future<void> _pickTime() async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -37,8 +41,7 @@ class _AscendantPageState extends State<AscendantPage> {
     }
   }
 
-void _calculateAscendant() {
-    // 1. Pokreni loading overlay sa animacijom sazvežđa
+  void _calculateAscendant() {
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
@@ -49,8 +52,11 @@ void _calculateAscendant() {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                
-                Lottie.asset('assets/stars.json', height: 250), // Tvoja nova animacija
+                Lottie.asset(
+                  'assets/stars.json', 
+                  height: 250, 
+                  errorBuilder: (c, e, s) => const CircularProgressIndicator(color: Colors.pink)
+                ),
                 const SizedBox(height: 20),
                 Text(
                   t(context, "Čitamo zvezde..."),
@@ -63,72 +69,144 @@ void _calculateAscendant() {
       },
     );
 
-    // 2. Simuliraj proračun i prikaži rezultat nakon 2 sekunde
     Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pop(context); // Zatvori loading
+      Navigator.pop(context); 
 
-      String result = AstroEngine.calculateAscendant(
-        _selectedDate,
-        _selectedTime.hour,
-        _selectedTime.minute,
-      );
+      // Pozivamo AstroEngine da nam izračuna sve podatke
+final natalData = AstroEngine.getFullNatalData(
+  _selectedDate,
+  _selectedTime.hour,
+  _selectedTime.minute,
+  lat: _lat,
+  lon: _lon,
+);
 
-      _showAscendantResult(result);
+      _showAscendantResult(natalData); 
     });
   }
 
-  void _showAscendantResult(String sign) {
+  void _showAscendantResult(Map<String, String> data) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: NeumorphicTheme.baseColor(context),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+        title: Text(t(context, "Tvoj Natal"), textAlign: TextAlign.center),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.auto_awesome, color: Colors.amber, size: 50),
-            const SizedBox(height: 20),
-            Text(
-              t(context, "Tvoj podznak je:"),
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 10),
+            _buildResultRow(t(context, "Sunce"), t(context, data['sun']!), Icons.wb_sunny, Colors.orange),
+            const Divider(),
+            _buildResultRow(t(context, "Podznak"), t(context, data['ascendant']!), Icons.expand_less, Colors.deepPurple),
+            const Divider(),
+            _buildResultRow(t(context, "Mesec"), t(context, data['moon']!), Icons.nightlight_round, Colors.blueGrey),
+            const SizedBox(height: 25),
+            
             Neumorphic(
-              style: const NeumorphicStyle(depth: 5, shape: NeumorphicShape.concave),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Text(
-                t(context, sign), // Prevodi ime znaka (npr. "Ovan")
-                style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.pink),
+              style: NeumorphicStyle(
+                depth: -3,
+                boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(15)),
               ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              _getSignDescription(sign),
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+              padding: const EdgeInsets.all(15),
+              child: Text(
+                _getSignDescription(data['ascendant']!), 
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+              ),
             ),
           ],
         ),
         actions: [
-          TextButton(
+          NeumorphicButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(t(context, "Zatvori")),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Text(t(context, "Zatvori"), style: const TextStyle(color: Colors.pink)),
           )
         ],
       ),
     );
   }
 
-  String _getSignDescription(String sign) {
-    // Ovde možeš dodati kratke opise za svaki podznak
-    Map<String, String> descriptions = {
-      "Ovan": "Energični i hrabri, uvek idete prvi.",
-      "Lav": "Puni ste samopouzdanja i volite pažnju.",
-      "Škorpija": "Misteriozni ste i veoma harizmatični.",
-      // Dodaj ostale po želji...
-    };
-    return descriptions[sign] ?? "Zanimljiva ličnost sa puno potencijala.";
+  Widget _buildResultRow(String label, String value, IconData icon, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(width: 12),
+          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+          const Spacer(),
+          Text(
+            value, 
+            style: TextStyle(color: Colors.pink[400], fontWeight: FontWeight.bold, fontSize: 16)
+          ),
+        ],
+      ),
+    );
   }
+
+  String _getSignDescription(String? sign) {
+    Map<String, String> descriptions = {
+      "Ovan": "Energični i hrabri, uvek idete prvi i volite izazove.",
+      "Bik": "Stabilni i pouzdani, uživate u lepoti i životnim zadovoljstvima.",
+      "Blizanci": "Radoznali i društveni, uvek imate spremnu pravu reč.",
+      "Rak": "Osećajni i intuitivni, veoma ste povezani sa domom i porodicom.",
+      "Lav": "Srdačni i harizmatični, volite da inspirišete druge oko sebe.",
+      "Devica": "Precizni i analitični, uvek primećujete detalje koje drugi propuste.",
+      "Vaga": "Šarmantni i diplomatični, težite balansu i harmoniji u svemu.",
+      "Škorpija": "Misteriozni i intenzivni, posedujete neverovatnu unutrašnju snagu.",
+      "Strelac": "Avanturisti i optimisti, uvek tražite dublji smisao života.",
+      "Jarac": "Ambiciozni i disciplinovani, sigurnim koracima idete ka vrhu.",
+      "Vodolija": "Originalni i nezavisni, razmišljate ispred svog vremena.",
+      "Ribe": "Sanjari i empatični, imate bogat unutrašnji svet i maštu.",
+    };
+    return descriptions[sign] ?? "Zanimljiva ličnost sa puno skrivenih talenata.";
+  }
+
+Widget _buildCityField() {
+  return Neumorphic(
+    style: NeumorphicStyle(depth: -5, boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(15))),
+    child: TypeAheadField<Map<String, dynamic>>(
+      // OVO JE KLJUČNO: Povezujemo kontroler
+      controller: _cityController, 
+      debounceDuration: const Duration(milliseconds: 500),
+      suggestionsCallback: (search) async {
+        return await AstroService.searchCities(search);
+      },
+      builder: (context, controller, focusNode) {
+        return TextField(
+          controller: controller, // Koristi isti kontroler ovde
+          focusNode: focusNode,
+          style: TextStyle(color: NeumorphicTheme.defaultTextColor(context)),
+          decoration: InputDecoration(
+            hintText: t(context, "Mesto rođenja"),
+            prefixIcon: Icon(Icons.location_city, color: Colors.pink[300]),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.all(18),
+          ),
+        );
+      },
+      itemBuilder: (context, city) {
+        return ListTile(
+          tileColor: NeumorphicTheme.baseColor(context),
+          title: Text(city['name'], style: TextStyle(color: NeumorphicTheme.defaultTextColor(context))),
+        );
+      },
+      onSelected: (city) {
+        setState(() {
+          _selectedCity = city['name'];
+          _cityController.text = city['name']; // Upisujemo ceo naziv u polje
+          _lat = city['lat'];
+          _lon = city['lon'];
+        });
+      },
+      emptyBuilder: (context) => Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(t(context, "Grad nije pronađen. Probaj latinično.")),
+      ),
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -139,11 +217,14 @@ void _calculateAscendant() {
         child: Column(
           children: [
             const SizedBox(height: 20),
-            // Animacija horoskopa/sazvežđa
-            Lottie.asset('assets/vaga.json', height: 200,),// Iskoristi vage 
+            Lottie.asset(
+              'assets/vaga.json', 
+              height: 200,
+              errorBuilder: (c, e, s) => Icon(Icons.auto_awesome, size: 100, color: Colors.pink[200]),
+            ),
             const SizedBox(height: 30),
-
-            // KARTICA ZA DATUM
+            _buildCityField(),
+const SizedBox(height: 20),
             _buildPickerCard(
               title: t(context, "Datum rođenja"),
               value: DateFormat('dd.MM.yyyy').format(_selectedDate),
@@ -153,7 +234,6 @@ void _calculateAscendant() {
 
             const SizedBox(height: 20),
 
-            // KARTICA ZA VREME (KRUŽNI SAT)
             _buildPickerCard(
               title: t(context, "Vreme rođenja"),
               value: _selectedTime.format(context),
@@ -169,11 +249,12 @@ void _calculateAscendant() {
                 shape: NeumorphicShape.flat,
                 boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(20)),
                 color: Colors.pink[50],
+                depth: 8,
               ),
               padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 50),
               child: Text(
                 t(context, "Otkrij podznak"),
-                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.pink),
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.pink, fontSize: 16),
               ),
             ),
           ],
@@ -199,7 +280,14 @@ void _calculateAscendant() {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: NeumorphicTheme.defaultTextColor(context))),
+                Text(
+                  value, 
+                  style: TextStyle(
+                    fontSize: 18, 
+                    fontWeight: FontWeight.bold, 
+                    color: NeumorphicTheme.defaultTextColor(context)
+                  )
+                ),
               ],
             ),
             const Spacer(),
