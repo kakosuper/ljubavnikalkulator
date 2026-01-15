@@ -8,7 +8,11 @@ import 'package:ljubavnikalkulator/providers/language_provider.dart';
 
 import 'screens/home_screen.dart'; 
 
+import 'package:flutter/widgets.dart';
+import 'package:timezone/data/latest_all.dart' as tzdata;
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  tzdata.initializeTimeZones();
   runApp(
     // MultiProvider omogućava registrovanje više provajdera odjednom
     MultiProvider(

@@ -5,6 +5,8 @@ import '../helpers/translate_helper.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import '../services/astro_service.dart';
+import 'package:timezone/timezone.dart' as tz;
+
 
 class AscendantPage extends StatefulWidget {
   @override
@@ -42,48 +44,83 @@ double _lon = 20.4612;
   }
 
   void _calculateAscendant() {
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: false,
-      pageBuilder: (context, anim1, anim2) {
-        return Scaffold(
-          backgroundColor: NeumorphicTheme.baseColor(context).withOpacity(0.9),
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Lottie.asset(
-                  'assets/stars.json', 
-                  height: 250, 
-                  errorBuilder: (c, e, s) => const CircularProgressIndicator(color: Colors.pink)
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  t(context, "Čitamo zvezde..."),
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
+  showGeneralDialog(
+    context: context,
+    barrierDismissible: false,
+    pageBuilder: (context, anim1, anim2) {
+      return Scaffold(
+        backgroundColor: NeumorphicTheme.baseColor(context).withOpacity(0.9),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Lottie.asset(
+                'assets/stars.json',
+                height: 250,
+                errorBuilder: (c, e, s) =>
+                    const CircularProgressIndicator(color: Colors.pink),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                t(context, "Čitamo zvezde..."),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      );
+    },
+  );
+
+  Future.delayed(const Duration(seconds: 2), () {
+    Navigator.pop(context);
+
+    // --- TAČNA TZ KONVERZIJA (ne zavisi od telefona) ---
+    final loc = tz.getLocation('Europe/Belgrade');
+
+    final birthLocal = tz.TZDateTime(
+      loc,
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+      _selectedTime.hour,
+      _selectedTime.minute,
     );
 
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pop(context); 
+    final birthUtc = birthLocal.toUtc();
 
-      // Pozivamo AstroEngine da nam izračuna sve podatke
-final natalData = AstroEngine.getFullNatalData(
-  _selectedDate,
-  _selectedTime.hour,
-  _selectedTime.minute,
-  lat: _lat,
-  lon: _lon,
-);
+    // Debug (da vidiš da nije +6h ili neka glupost)
+    // Očekuješ za Srbiju 1991-09-27: offset +02:00 (CEST)
+    // i UTC = local - 2h
+    debugPrint("BIRTH LOCAL: $birthLocal  offset=${birthLocal.timeZoneOffset}");
+    debugPrint("BIRTH UTC:   $birthUtc   isUtc=${birthUtc.isUtc}");
+    debugPrint("LAT/LON: $_lat / $_lon");
 
-      _showAscendantResult(natalData); 
-    });
-  }
+    // --- RAČUNANJE: Sun po lokalnom datumu, Moon + Asc po UTC ---
+    final sun = AstroEngine.getZodiacSign(DateTime(
+      birthLocal.year,
+      birthLocal.month,
+      birthLocal.day,
+    ));
+
+    final moon = AstroEngine.getMoonSignUtc(birthUtc);
+
+    final asc = AstroEngine.calculateAscendantUtc(
+      birthUtc,
+      lat: _lat,
+      lon: _lon,
+    );
+
+    final natalData = <String, String>{
+      "sun": sun,
+      "moon": moon,
+      "ascendant": asc,
+    };
+
+    _showAscendantResult(natalData);
+  });
+}
+
 
   void _showAscendantResult(Map<String, String> data) {
     showDialog(
@@ -165,7 +202,7 @@ final natalData = AstroEngine.getFullNatalData(
 
 Widget _buildCityField() {
   return Neumorphic(
-    style: NeumorphicStyle(depth: -5, boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(15))),
+    style: NeumorphicStyle(depth: 4, boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(15))),
     child: TypeAheadField<Map<String, dynamic>>(
       // OVO JE KLJUČNO: Povezujemo kontroler
       controller: _cityController, 
@@ -222,8 +259,7 @@ Widget _buildCityField() {
               height: 200,
               errorBuilder: (c, e, s) => Icon(Icons.auto_awesome, size: 100, color: Colors.pink[200]),
             ),
-            const SizedBox(height: 30),
-            _buildCityField(),
+            
 const SizedBox(height: 20),
             _buildPickerCard(
               title: t(context, "Datum rođenja"),
@@ -241,7 +277,12 @@ const SizedBox(height: 20),
               onTap: _pickTime,
             ),
 
-            const SizedBox(height: 40),
+            const SizedBox(height: 10),
+
+            
+            _buildCityField(),
+
+            const SizedBox(height: 60),
 
             NeumorphicButton(
               onPressed: _calculateAscendant,
@@ -263,38 +304,52 @@ const SizedBox(height: 20),
     );
   }
 
-  Widget _buildPickerCard({required String title, required String value, required IconData icon, required VoidCallback onTap}) {
-    return NeumorphicButton(
-      onPressed: onTap,
-      style: NeumorphicStyle(
-        depth: 4,
-        boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(15)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.pink[300]),
-            const SizedBox(width: 20),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                Text(
-                  value, 
-                  style: TextStyle(
-                    fontSize: 18, 
-                    fontWeight: FontWeight.bold, 
-                    color: NeumorphicTheme.defaultTextColor(context)
-                  )
+ Widget _buildPickerCard({
+  required String title,
+  required String value,
+  required IconData icon,
+  required VoidCallback onTap,
+}) {
+  final isDark = NeumorphicTheme.isUsingDark(context);
+
+  final titleColor = isDark ? Colors.white70 : Colors.black54;
+  final valueColor = isDark ? Colors.white : Colors.black87;
+  final iconColor = isDark ? Colors.pink[200] : Colors.pink[300];
+  final editColor = isDark ? Colors.white54 : Colors.grey[500];
+
+  return NeumorphicButton(
+    onPressed: onTap,
+    style: NeumorphicStyle(
+      depth: 4,
+      lightSource: LightSource.topLeft,
+      boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(15)),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+      child: Row(
+        children: [
+          Icon(icon, color: iconColor),
+          const SizedBox(width: 20),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: TextStyle(color: titleColor, fontSize: 12)),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: valueColor,
                 ),
-              ],
-            ),
-            const Spacer(),
-            Icon(Icons.edit, size: 16, color: Colors.grey[400]),
-          ],
-        ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          Icon(Icons.edit, size: 16, color: editColor),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 }

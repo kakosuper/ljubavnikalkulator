@@ -1,120 +1,225 @@
 import 'dart:math';
 
 class AstroEngine {
+  static const List<String> _zodiac = [
+    "Ovan",
+    "Bik",
+    "Blizanci",
+    "Rak",
+    "Lav",
+    "Devica",
+    "Vaga",
+    "Škorpija",
+    "Strelac",
+    "Jarac",
+    "Vodolija",
+    "Ribe",
+  ];
+
+  // =========================
+  // Public API (što ti već zoveš)
+  // =========================
+
+  /// Tvoj postojeći poziv iz AscendantPage:
+  /// AstroEngine.getFullNatalData(_selectedDate, hour, minute, lat: _lat, lon: _lon, timeZoneOffset: offset)
+  static Map<String, String> getFullNatalData(
+  DateTime birthDate,
+  int hour,
+  int minute, {
+  required double lat,
+  required double lon,
+  Duration? timeZoneOffset,
+}) {
+  final local = DateTime(birthDate.year, birthDate.month, birthDate.day, hour, minute);
+  final utc = (timeZoneOffset != null) ? local.subtract(timeZoneOffset) : local.toUtc();
+
+  print("LOCAL: $local");
+  print("UTC:   $utc  isUtc=${utc.isUtc}");
+  print("LAT/LON: $lat / $lon");
+
+  final sun = getZodiacSign(birthDate);
+  final moon = getMoonSignUtc(utc);
+  final asc = calculateAscendantUtc(utc, lat: lat, lon: lon);
+
+  return {"sun": sun, "moon": moon, "ascendant": asc};
+}
+
+/// Kineski znak (po godini)
+static Map<String, String> getChineseZodiac(int year) {
+  List<String> signs = [
+    "Majmun", "Petao", "Pas", "Svinja", "Pacov", "Bivo", 
+    "Tigar", "Zec", "Zmaj", "Zmija", "Konj", "Koza"
+  ];
+
+  Map<String, String> descriptions = {
+      "Pacov": "Pametan, snalažljiv i šarmantan. Lako se prilagođava svakoj situaciji.",
+      "Bivo": "Vredan, pouzdan i odlučan. Osoba na koju se svi mogu osloniti.",
+      "Tigar": "Hrabar, samouveren i rođeni vođa. Voli izazove i rizik.",
+      "Zec": "Nežan, elegantan i ljubazan. Izbegava konflikte i voli mir.",
+      "Zmaj": "Moćan, entuzijastičan i pun energije. Sreća ga često prati.",
+      "Zmija": "Mudra, misteriozna i intuitivna. Duboko razmišlja pre svakog koraka.",
+      "Konj": "Slobodouman, energičan i voli društvo. Ne voli ograničenja.",
+      "Koza": "Kreativna, mirna i saosećajna. Ima umetničku dušu.",
+      "Majmun": "Duhovit, inteligentan i inovativan. Uvek pronađe rešenje za problem.",
+      "Petao": "Precizan, marljiv i iskren. Voli da sve bude pod konac.",
+      "Pas": "Veran, pošten i zaštitnički nastrojen. Najbolji prijatelj kojeg možeš imati.",
+      "Svinja": "Dobrodušna, velikodušna i iskrena. Uživa u lepim stvarima u životu.",
+    };
   
-  // 1. NORMALIZACIJA TEKSTA (Tvoj kod)
-  static String _prepareString(String input) {
-    var cyr = ['а','б','в','г','д','ђ','е','ж','з','и','ј','к','л','љ','м','н','њ','о','п','р','с','т','ћ','у','ф','х','ц','č','џ','ш'];
-    var lat = ['a','b','v','g','d','dj','e','z','z','i','j','k','l','lj','m','n','nj','o','p','r','s','t','c','u','f','h','c','c','dz','s'];
-    
-    String output = input.toLowerCase().trim();
-    for (int i = 0; i < cyr.length; i++) {
-      output = output.replaceAll(cyr[i], lat[i]);
-    }
-    return output;
-  }
+  // Kineski ciklus počinje od godine koja pripada Pacovu
+  // Modulo 12 određuje znak
+  int index = year % 12;
+  String sign = signs[index];
 
-  // 2. LOVE CALCULATOR LOGIKA (Tvoj kod)
-  static int calculateNameMatch(String name1, String name2) {
-    if (name1.isEmpty || name2.isEmpty) return 0;
-    String n1 = _prepareString(name1);
-    String n2 = _prepareString(name2);
-    String combined = n1 + n2;
-    
-    int sum = 0;
-    for (int i = 0; i < combined.length; i++) {
-      sum += combined.codeUnitAt(i);
-    }
-    int percentage = sum % 101;
-    if (percentage < 30) percentage += 40; 
-    if (percentage > 100) percentage = 99;
-    return percentage;
-  }
+  List<String> elements = ["Metal", "Voda", "Drvo", "Vatra", "Zemlja"];
+  // Element se menja svake dve godine
+  int elementIndex = ((year % 10) / 2).floor();
+  String element = elements[elementIndex % 5];
 
-  // 3. SUNČEV ZNAK (Tvoj kod)
+  return {"sign": sign, "element": element, "description": descriptions[sign] ?? "Opis nije dostupan."};
+}
+
+  /// Sunčev znak (po datumu)
   static String getZodiacSign(DateTime date) {
-    int day = date.day;
-    int month = date.month;
-    if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) return "Ovan";
-    if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) return "Bik";
-    if ((month == 5 && day >= 21) || (month == 6 && day <= 20)) return "Blizanci";
-    if ((month == 6 && day >= 21) || (month == 7 && day <= 22)) return "Rak";
-    if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) return "Lav";
-    if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) return "Devica";
-    if ((month == 9 && day >= 23) || (month == 10 && day <= 22)) return "Vaga";
-    if ((month == 10 && day >= 23) || (month == 11 && day <= 21)) return "Škorpija";
-    if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) return "Strelac";
-    if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) return "Jarac";
-    if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) return "Vodolija";
+    final d = date.day;
+    final m = date.month;
+
+    if ((m == 3 && d >= 21) || (m == 4 && d <= 19)) return "Ovan";
+    if ((m == 4 && d >= 20) || (m == 5 && d <= 20)) return "Bik";
+    if ((m == 5 && d >= 21) || (m == 6 && d <= 20)) return "Blizanci";
+    if ((m == 6 && d >= 21) || (m == 7 && d <= 22)) return "Rak";
+    if ((m == 7 && d >= 23) || (m == 8 && d <= 22)) return "Lav";
+    if ((m == 8 && d >= 23) || (m == 9 && d <= 22)) return "Devica";
+    if ((m == 9 && d >= 23) || (m == 10 && d <= 22)) return "Vaga";
+    if ((m == 10 && d >= 23) || (m == 11 && d <= 21)) return "Škorpija";
+    if ((m == 11 && d >= 22) || (m == 12 && d <= 21)) return "Strelac";
+    if ((m == 12 && d >= 22) || (m == 1 && d <= 19)) return "Jarac";
+    if ((m == 1 && d >= 20) || (m == 2 && d <= 18)) return "Vodolija";
     return "Ribe";
   }
 
-  // 4. PODZNAK (Tvoj kod)
-  static String calculateAscendant(DateTime date, int hour, int minute) {
-    double time = hour + (minute / 60.0);
-    List<String> signs = ["Ovan", "Bik", "Blizanci", "Rak", "Lav", "Devica", "Vaga", "Škorpija", "Strelac", "Jarac", "Vodolija", "Ribe"];
-    int month = date.month;
-    int index;
-    if (month == 1) index = ((time - 4) / 2).floor();
-    else if (month == 2) index = ((time - 2) / 2).floor();
-    else if (month == 3) index = (time / 2).floor();
-    else if (month == 4) index = ((time + 2) / 2).floor();
-    else if (month == 5) index = ((time + 4) / 2).floor();
-    else if (month == 6) index = ((time + 6) / 2).floor();
-    else if (month == 7) index = ((time + 8) / 2).floor();
-    else if (month == 8) index = ((time + 10) / 2).floor();
-    else if (month == 9) index = ((time + 12) / 2).floor();
-    else if (month == 10) index = ((time + 14) / 2).floor();
-    else if (month == 11) index = ((time + 16) / 2).floor();
-    else index = ((time + 18) / 2).floor();
+  /// Mesec (tropical) iz UTC vremena, aproksimacija dovoljno dobra za znak
+  static String getMoonSignUtc(DateTime utc) {
+    final jd = _julianDayUtc(utc);
+    final d = jd - 2451545.0;
 
-    index = index % 12;
-    if (index < 0) index += 12;
-    return signs[index];
+    double Lp = _normDeg(218.316 + 13.176396 * d);
+    double D = _normDeg(297.850 + 12.190749 * d);
+    double Mp = _normDeg(134.963 + 13.064993 * d);
+
+    double lon = Lp
+        + 6.289 * sin(_deg2rad(Mp))
+        + 1.274 * sin(_deg2rad(2 * D - Mp))
+        + 0.658 * sin(_deg2rad(2 * D))
+        + 0.214 * sin(_deg2rad(2 * Mp))
+        + 0.110 * sin(_deg2rad(D));
+
+    lon = _normDeg(lon);
+    return _zodiac[(lon ~/ 30) % 12];
   }
 
-  // 5. PRECIZAN MESEC (Moj astronomski dodatak - besplatno i offline)
-  static String getAccurateMoonSign(DateTime date, int hour, int minute) {
-    // Astronomski proračun na osnovu Julian datuma
-    double year = date.year.toDouble();
-    double month = date.month.toDouble();
-    double day = date.day + (hour / 24.0) + (minute / 1440.0);
-    
-    if (month <= 2) { year -= 1; month += 12; }
-    double a = (year / 100).floorToDouble();
-    double b = 2 - a + (a / 4).floorToDouble();
-    double jd = (365.25 * (year + 4716)).floorToDouble() + (30.6001 * (month + 1)).floorToDouble() + day + b - 1524.5;
+  /// Podznak (ASC) iz UTC vremena + lokacije (lat/lon u stepenima, lon EAST pozitivno)
+ static String calculateAscendantUtc(DateTime utc, {required double lat, required double lon}) {
+  final jd = _julianDayUtc(utc);
+  final T = (jd - 2451545.0) / 36525.0;
 
-    double t = (jd - 2451545.0) / 36525.0;
-    // Mesečeva srednja longituda
-    double l = 218.316 + 13.176396 * (jd - 2451545.0);
-    // Glavne anomalije za preciznost
-    double m = 357.529 + 35.592737 * (jd - 2451545.0);
-    double f = 93.272 + 13.229350 * (jd - 2451545.0);
-    
-    double longitude = l + 6.289 * sin(f * pi / 180) + 1.274 * sin((2*l - f) * pi / 180);
-    
-    int index = ((longitude % 360) / 30).floor();
-    List<String> signs = ["Ovan", "Bik", "Blizanci", "Rak", "Lav", "Devica", "Vaga", "Škorpija", "Strelac", "Jarac", "Vodolija", "Ribe"];
-    return signs[index % 12];
+  double gmst = 280.46061837
+      + 360.98564736629 * (jd - 2451545.0)
+      + 0.000387933 * T * T
+      - (T * T * T) / 38710000.0;
+  gmst = _normDeg(gmst);
+
+  // LST: longitude east-positive (Srbija je +)
+  final lst = _normDeg(gmst + lon);
+
+  final theta = _deg2rad(lst);
+  final phi = _deg2rad(lat);
+
+  // obliquity
+  final eps = _deg2rad(23.439291 - 0.0130042 * T);
+
+  // ✅ ISPRAVNA ASC formula (ovo ti daje Vodolija 23.54° za tvoj primer)
+  final lam = atan2(
+    -cos(theta),
+    sin(theta) * cos(eps) + tan(phi) * sin(eps),
+  );
+
+  double ascDeg = _normDeg(_rad2deg(lam) + 180.0);
+
+  const signs = [
+    "Ovan", "Bik", "Blizanci", "Rak", "Lav", "Devica",
+    "Vaga", "Škorpija", "Strelac", "Jarac", "Vodolija", "Ribe"
+  ];
+
+  return signs[(ascDeg ~/ 30) % 12];
+}
+
+
+static Map<String, String> getFullNatalDataUtc(DateTime utc, {required double lat, required double lon}) {
+  return {
+    "ascendant": calculateAscendantUtc(utc, lat: lat, lon: lon),
+    "moon": getMoonSignUtc(utc),
+    // Sun obično ide po lokalnom datumu, ali za tvoju app može i ovako:
+    "sun": getZodiacSign(DateTime(utc.year, utc.month, utc.day)),
+  };
+}
+
+
+
+  // =========================
+  // Helpers
+  // =========================
+
+  static double _julianDayUtc(DateTime utc) {
+    // utc MUST be in UTC
+    final y0 = utc.year;
+    final m0 = utc.month;
+    final day = utc.day +
+        (utc.hour + utc.minute / 60.0 + utc.second / 3600.0 + utc.millisecond / 3600000.0) / 24.0;
+
+    int y = y0;
+    int m = m0;
+    if (m <= 2) {
+      y -= 1;
+      m += 12;
+    }
+
+    final A = y ~/ 100;
+    final B = 2 - A + (A ~/ 4);
+
+    return (365.25 * (y + 4716)).floorToDouble()
+        + (30.6001 * (m + 1)).floorToDouble()
+        + day
+        + B
+        - 1524.5;
   }
 
-  // 6. SPAJANJE SVEGA (Finalna metoda)
-  static Map<String, String> getFullNatalData(DateTime date, int hour, int minute, {double? lat, double? lon}) {
-    return {
-      "sun": getZodiacSign(date),
-      "ascendant": calculateAscendant(date, hour, minute),
-      "moon": getAccurateMoonSign(date, hour, minute), // Sada je 100% tačno bez API-ja
-    };
+  static double _deg2rad(double d) => d * pi / 180.0;
+  static double _rad2deg(double r) => r * 180.0 / pi;
+
+  static double _normDeg(double x) {
+    x %= 360.0;
+    if (x < 0) x += 360.0;
+    return x;
   }
 
-  // 7. FINALNI SKOR ZA LJUBAV (Tvoj kod)
-  static int getFinalScore({required String name1, required String name2, DateTime? bday1, DateTime? bday2}) {
-    int nameScore = calculateNameMatch(name1, name2);
-    if (bday1 == null || bday2 == null) return nameScore;
-    String sign1 = getZodiacSign(bday1);
-    String sign2 = getZodiacSign(bday2);
-    int astroScore = (sign1 == sign2) ? 95 : 75; 
-    return ((nameScore + astroScore) / 2).round();
+  // Ako ti treba i dalje LoveCalculator procenat:
+  static int calculateNameMatch(String a, String b) {
+    // (ostavi svoju logiku ako već imaš)
+    final s1 = _simpleScore(a);
+    final s2 = _simpleScore(b);
+    final diff = (s1 - s2).abs();
+    return (100 - (diff % 100)).clamp(1, 99);
   }
+
+  static int _simpleScore(String s) {
+    final t = s.trim().toLowerCase();
+    int sum = 0;
+    for (final code in t.codeUnits) {
+      if (code >= 97 && code <= 122) sum += (code - 96);
+    }
+    return sum;
+  }
+
+  
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../helpers/translate_helper.dart'; // Importujemo naš t() helper
+import 'package:lottie/lottie.dart';
 
 // STRANA O APLIKACIJI
 class AboutPage extends StatelessWidget {
@@ -11,17 +12,36 @@ class AboutPage extends StatelessWidget {
         title: Text(t(context, "O aplikaciji")),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: EdgeInsets.all(20),
-        child: Text(
-          t(context, 
-            "Ova aplikacija koristi napredne astrološke algoritme i ASCII modulo proračune kako bi odredila kompatibilnost između dve osobe. "
-            "Naš cilj je da pružimo zabavan način za istraživanje odnosa kroz numerologiju i astrologiju."
+      body: SingleChildScrollView(
+  padding: const EdgeInsets.all(20),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Text(
+        t(context,
+          "Ova aplikacija koristi napredne astrološke algoritme i ASCII modulo proračune kako bi odredila kompatibilnost između dve osobe. "
+          "Naš cilj je da pružimo zabavan način za istraživanje odnosa kroz numerologiju i astrologiju."
+        ),
+        style: const TextStyle(fontSize: 16, height: 1.5),
+        textAlign: TextAlign.justify,
+      ),
+      const SizedBox(height: 24),
+
+      // Lottie ispod teksta
+      Center(
+        child: SizedBox(
+          height: 220,
+          width: 220,
+          child: Lottie.asset(
+            'assets/vaga.json',
+            fit: BoxFit.contain,
           ),
-          style: TextStyle(fontSize: 16, height: 1.5),
-          textAlign: TextAlign.justify,
         ),
       ),
+    ],
+  ),
+),
+
     );
   }
 }
