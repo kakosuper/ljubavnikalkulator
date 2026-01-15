@@ -6,6 +6,9 @@ import 'package:ljubavnikalkulator/screens/calculator.dart';
 import 'package:ljubavnikalkulator/screens/history.dart';
 import '../widgets/app_drawer.dart';
 
+import 'package:ljubavnikalkulator/ui/ui_tokens.dart';
+import 'package:ljubavnikalkulator/widgets/fancy_appbar_title.dart';
+
 import '../helpers/translate_helper.dart'; // Naš helper za pismo
 
 class HomeScreen extends StatefulWidget {
@@ -27,59 +30,44 @@ final List<Widget> _pages = [
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Koristimo t() za naslov u AppBar-u
-      appBar: AppBar(
-  title: Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      ShaderMask(
-        shaderCallback: (bounds) => const LinearGradient(
-          colors: [Color(0xFFFF5FA2), Color(0xFFB388FF)],
-        ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height)),
-        child: Text(
-          t(context, "Ljubav i Zvezde"),
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1.1,
-            color: Colors.white,
-          ),
-        ),
+  extendBodyBehindAppBar: true,
+  appBar: AppBar(
+    title: const FancyAppBarTitle(
+      titleKey: "Ljubav i Zvezde",
+      subtitleKey: "Kompatibilnost • Astro • Zabava",
+    ),
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+    centerTitle: true,
+  ),
+  drawer: AppDrawer(),
+
+  body: Container(
+    decoration: UiTokens.background(context),
+    child: SafeArea(
+      bottom: false,
+      child: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
       ),
-      const SizedBox(height: 2),
-      Text(
-        t(context, "Kompatibilnost • Astro • Zabava"),
-        style: TextStyle(
-          fontSize: 11,
-          letterSpacing: 0.8,
-          color: NeumorphicTheme.isUsingDark(context) ? Colors.white60 : Colors.black54,
-        ),
-      ),
+    ),
+  ),
+
+  bottomNavigationBar: BottomNavigationBar(
+    type: BottomNavigationBarType.fixed,
+    currentIndex: _currentIndex,
+    onTap: (index) => setState(() => _currentIndex = index),
+    backgroundColor: UiTokens.surface(context),
+    selectedItemColor: UiTokens.accentPink,
+    unselectedItemColor: UiTokens.iconMuted(context),
+    items: [
+      BottomNavigationBarItem(icon: Icon(Icons.favorite), label: t(context, "Ljubav")),
+      BottomNavigationBarItem(icon: Icon(Icons.history), label: t(context, "Istorija")),
+      BottomNavigationBarItem(icon: Icon(Icons.auto_awesome), label: t(context, "Podznak")),
+      BottomNavigationBarItem(icon: Icon(Icons.catching_pokemon), label: t(context, "Kineski")),
     ],
   ),
-  backgroundColor: Colors.transparent,
-  elevation: 0,
-  centerTitle: true,
-),
+);
 
-      
-      drawer: AppDrawer(),
-      
-      body: _pages[_currentIndex],
-      
-      bottomNavigationBar: BottomNavigationBar(
-  type: BottomNavigationBarType.fixed, // Ovo dodaj jer sada imaš 4 ikonice
-  currentIndex: _currentIndex,
-  onTap: (index) => setState(() => _currentIndex = index),
-  selectedItemColor: Colors.pink,
-  unselectedItemColor: Colors.grey,
-  items: [
-    BottomNavigationBarItem(icon: Icon(Icons.favorite), label: t(context, "Ljubav")),
-    BottomNavigationBarItem(icon: Icon(Icons.history), label: t(context, "Istorija")),
-    BottomNavigationBarItem(icon: Icon(Icons.auto_awesome), label: t(context, "Podznak")),
-    BottomNavigationBarItem(icon: Icon(Icons.catching_pokemon), label: t(context, "Kineski")), // NOVA IKONICA
-  ],
-),
-    );
   }
 }

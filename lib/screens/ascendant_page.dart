@@ -1,11 +1,14 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:intl/intl.dart'; 
 import 'package:ljubavnikalkulator/engine/AstroEngine.dart';
+import 'package:ljubavnikalkulator/ui/ui_tokens.dart';
 import '../helpers/translate_helper.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import '../services/astro_service.dart';
 import 'package:timezone/timezone.dart' as tz;
+
+
 
 
 class AscendantPage extends StatefulWidget {
@@ -49,8 +52,9 @@ double _lon = 20.4612;
     barrierDismissible: false,
     pageBuilder: (context, anim1, anim2) {
       return Scaffold(
-        backgroundColor: NeumorphicTheme.baseColor(context).withOpacity(0.9),
-        body: Center(
+        backgroundColor: Colors.transparent,
+        body: SingleChildScrollView(
+          padding: UiTokens.pagePadding,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

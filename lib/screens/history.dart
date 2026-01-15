@@ -1,8 +1,10 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:intl/intl.dart';
+import 'package:ljubavnikalkulator/ui/ui_tokens.dart';
 import '../services/history_service.dart';
 import '../models/history_item.dart';
 import '../helpers/translate_helper.dart';
+import '../ui/ui_tokens.dart';
 
 class HistoryPage extends StatefulWidget {
   @override
@@ -28,18 +30,23 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: NeumorphicTheme.baseColor(context),
-      body: _history.isEmpty
-          ? Center(child: Text(t(context, "Istorija je prazna")))
-          : ListView.builder(
-              padding: EdgeInsets.all(15),
-              itemCount: _history.length,
-              itemBuilder: (context, index) {
-                final item = _history[index];
-                return _buildHistoryCard(item);
-              },
+  backgroundColor: Colors.transparent,
+  body: Padding(
+    padding: UiTokens.pagePadding,
+    child: _history.isEmpty
+        ? Center(
+            child: Text(
+              t(context, "Istorija je prazna"),
+              style: TextStyle(color: UiTokens.textSecondary(context)),
             ),
-    );
+          )
+        : ListView.builder(
+            padding: EdgeInsets.zero,
+            itemCount: _history.length,
+            itemBuilder: (context, index) => _buildHistoryCard(_history[index]),
+          ),
+  ),
+);
   }
 
   Widget _buildHistoryCard(HistoryItem item) {

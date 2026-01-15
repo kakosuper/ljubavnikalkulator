@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
+import 'package:ljubavnikalkulator/ui/ui_tokens.dart';
 import '../engine/AstroEngine.dart';
 import '../helpers/translate_helper.dart';
 import '../widgets/loading_overlay.dart';
@@ -584,21 +585,21 @@ bool _isOppositeSign(String s1, String s2) {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: NeumorphicTheme.baseColor(context),
+      backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(10),
+        padding: UiTokens.pagePadding,
         child: Column(
           children: [
-            const SizedBox(height: 40),
+            
             SizedBox(
-  height: 280,
-  width: 280, // bitno ako ga parent steže
-  child: Lottie.asset(
-    'assets/love.json',
-    controller: _heartController,
-    fit: BoxFit.contain, // ili BoxFit.cover ako hoćeš da popuni kutiju
-  ),
-),
+          height: 280,
+          width: 280,
+          child: Lottie.asset(
+            'assets/love.json',
+            controller: _heartController,
+            fit: BoxFit.contain,
+          ),
+        ),
             //const SizedBox(height: 30),
             _buildInputField(t(context, "Tvoje ime"), _name1Controller),
             const SizedBox(height: 20),

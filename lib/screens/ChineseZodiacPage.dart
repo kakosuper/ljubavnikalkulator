@@ -1,4 +1,5 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
+import 'package:ljubavnikalkulator/ui/ui_tokens.dart';
 import 'package:lottie/lottie.dart';
 import '../engine/AstroEngine.dart';
 import '../helpers/translate_helper.dart';
@@ -115,9 +116,9 @@ final fieldBg = isDark ? const Color(0xFF2A2A2A) : NeumorphicTheme.baseColor(con
 final dropdownBg = isDark ? const Color(0xFF1F1F1F) : NeumorphicTheme.baseColor(context);
 
     return Scaffold(
-      backgroundColor: NeumorphicTheme.baseColor(context),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+      backgroundColor: Colors.transparent,
+  body: SingleChildScrollView(
+        padding: UiTokens.pagePadding,
         child: Column(
           children: [
             const SizedBox(height: 20),
