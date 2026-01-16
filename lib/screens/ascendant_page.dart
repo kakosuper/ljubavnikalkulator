@@ -48,33 +48,45 @@ double _lon = 20.4612;
 
   void _calculateAscendant() {
   showGeneralDialog(
-    context: context,
-    barrierDismissible: false,
-    pageBuilder: (context, anim1, anim2) {
-      return Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SingleChildScrollView(
-          padding: UiTokens.pagePadding,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Lottie.asset(
-                'assets/stars.json',
-                height: 250,
-                errorBuilder: (c, e, s) =>
-                    const CircularProgressIndicator(color: Colors.pink),
+  context: context,
+  barrierDismissible: false,
+  pageBuilder: (context, anim1, anim2) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: UiTokens.pagePadding,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Lottie.asset(
+                      'assets/stars.json',
+                      height: 250,
+                      errorBuilder: (c, e, s) =>
+                          const CircularProgressIndicator(color: Colors.pink),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      t(context, "Čitamo zvezde..."),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 20),
-              Text(
-                t(context, "Čitamo zvezde..."),
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-        ),
-      );
-    },
-  );
+            ),
+          );
+        },
+      ),
+    );
+  },
+);
+
+
 
   Future.delayed(const Duration(seconds: 2), () {
     Navigator.pop(context);

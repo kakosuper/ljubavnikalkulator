@@ -1,9 +1,10 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
-import 'package:ljubavnikalkulator/ui/ui_tokens.dart';
 import 'package:lottie/lottie.dart';
 import '../engine/AstroEngine.dart';
 import '../helpers/translate_helper.dart';
 import '../widgets/loading_overlay.dart';
+import 'package:ljubavnikalkulator/ui/ui_tokens.dart';
+
 
 class ChineseZodiacPage extends StatefulWidget {
   @override
@@ -11,7 +12,22 @@ class ChineseZodiacPage extends StatefulWidget {
 }
 
 class _ChineseZodiacPageState extends State<ChineseZodiacPage> {
-  int _selectedYear = DateTime.now().year;
+  DateTime _birthDate = DateTime(1995, 1, 1);
+
+  Future<void> _pickBirthDate() async {
+  final picked = await showDatePicker(
+    context: context,
+    initialDate: _birthDate,
+    firstDate: DateTime(1900),
+    lastDate: DateTime.now(),
+  );
+
+  if (picked != null) {
+    setState(() => _birthDate = picked);
+  }
+}
+
+
 
   void _calculateChinese() {
     final loadingMsg = t(context, "Konsultujemo drevne mudrace...", listen: false);
@@ -21,7 +37,7 @@ class _ChineseZodiacPageState extends State<ChineseZodiacPage> {
       if (!mounted) return;
       LoadingOverlay.hide();
       
-      final result = AstroEngine.getChineseZodiac(_selectedYear);
+      final result = AstroEngine.getChineseZodiacByDate(_birthDate);
       _showResult(result['sign']!, result['element']!, result['description']!);
     });
   }
@@ -128,51 +144,35 @@ final dropdownBg = isDark ? const Color(0xFF1F1F1F) : NeumorphicTheme.baseColor(
             const SizedBox(height: 30),
             Text(t(context, "Izaberi godinu rođenja:"), style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
             const SizedBox(height: 20),
-            Neumorphic(
+            NeumorphicButton(
+  onPressed: _pickBirthDate,
   style: NeumorphicStyle(
-    depth: -5,
+    depth: 4,
     boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(15)),
-    color: fieldBg,
   ),
-  child: DropdownButtonHideUnderline(
-    child: DropdownButton<int>(
-      value: _selectedYear,
-      isExpanded: true,
-      dropdownColor: dropdownBg,
-      icon: Icon(Icons.arrow_drop_down, color: textColor),
-
-      // BITNO: ovo kontroliše boju selektovanog teksta (ono što vidiš zatvoreno)
-      style: TextStyle(color: textColor, fontSize: 16),
-
-      // BITNO: da selektovana vrednost bude ista kao u itemima
-      selectedItemBuilder: (context) {
-        return List.generate(100, (index) {
-          final year = DateTime.now().year - index;
-          return Center(
-            child: Text(
-              year.toString(),
-              style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          );
-        });
-      },
-
-      items: List.generate(100, (index) => DateTime.now().year - index)
-          .map((year) => DropdownMenuItem<int>(
-                value: year,
-                child: Center(
-                  child: Text(
-                    year.toString(),
-                    style: TextStyle(color: textColor, fontSize: 16),
-                  ),
-                ),
-              ))
-          .toList(),
-
-      onChanged: (val) => setState(() => _selectedYear = val!),
+  child: Padding(
+    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          "${_birthDate.day.toString().padLeft(2, '0')}.${_birthDate.month.toString().padLeft(2, '0')}.${_birthDate.year}",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: UiTokens.textPrimary(context), // ✅ dark=white, light=black
+          ),
+        ),
+        Icon(
+          Icons.calendar_today,
+          size: 18,
+          color: UiTokens.textPrimary(context), // ✅ isto
+        ),
+      ],
     ),
   ),
 ),
+
+
 
             const SizedBox(height: 50),
             NeumorphicButton(

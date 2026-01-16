@@ -19,6 +19,7 @@ dependencies:
   sweph: ^3.2.1+2.10.3  # NASA/Swiss Ephemeris preciznost
   shared_preferences: ^2.5.3
   timezone: ^0.10.1
+  lunar: ^1.7.8
 
 dev_dependencies:
   flutter_test:

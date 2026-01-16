@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:lunar/lunar.dart' as lunar;
 
 class AstroEngine {
   static const List<String> _zodiac = [
@@ -220,6 +221,82 @@ static Map<String, String> getFullNatalDataUtc(DateTime utc, {required double la
     }
     return sum;
   }
+static Map<String, String> getChineseZodiacByDate(DateTime birthDate) {
+  // bitno: samo datum, bez vremena
+  final d = DateTime(birthDate.year, birthDate.month, birthDate.day);
+
+  final l = lunar.Lunar.fromDate(d);
+
+  // Kineski zodiac (ShengXiao) za LUNARNU godinu (tj. pre/posle Chinese New Year je automatski rešeno)
+  final shengXiaoCn = l.getYearShengXiao(); // npr. 鼠, 牛, 虎...
+  final ganCn = l.getYearGan(); // npr. 甲乙丙丁...
+
+  final sign = _shengXiaoCnToSr(shengXiaoCn);
+  final element = _ganToElementSr(ganCn);
+
+  final desc = _chineseDesc(sign, element);
+
+  return {
+    "sign": sign,
+    "element": element,
+    "description": desc,
+    "lunarYear": l.getYear().toString(), // zgodno za debug
+  };
+}
+
+static String _shengXiaoCnToSr(String cn) {
+  const map = {
+    "鼠": "Pacov",
+    "牛": "Bivo",
+    "虎": "Tigar",
+    "兔": "Zec",
+    "龙": "Zmaj",
+    "蛇": "Zmija",
+    "马": "Konj",
+    "羊": "Koza",
+    "猴": "Majmun",
+    "鸡": "Petao",
+    "狗": "Pas",
+    "猪": "Svinja",
+  };
+  return map[cn] ?? "Nepoznato";
+}
+
+// Heavenly stem -> element (WuXing)
+static String _ganToElementSr(String ganCn) {
+  const wood = {"甲", "乙"};
+  const fire = {"丙", "丁"};
+  const earth = {"戊", "己"};
+  const metal = {"庚", "辛"};
+  const water = {"壬", "癸"};
+
+  if (wood.contains(ganCn)) return "Drvo";
+  if (fire.contains(ganCn)) return "Vatra";
+  if (earth.contains(ganCn)) return "Zemlja";
+  if (metal.contains(ganCn)) return "Metal";
+  if (water.contains(ganCn)) return "Voda";
+  return "Nepoznato";
+}
+
+static String _chineseDesc(String sign, String element) {
+  // kratko i “premium” neutralno; možeš kasnije proširiti
+  final base = {
+    "Pacov": "Brz um, snalažljivost i jak instinkt.",
+    "Bivo": "Stabilnost, upornost i mirna snaga.",
+    "Tigar": "Hrabrost, impuls i liderstvo.",
+    "Zec": "Takt, elegancija i osećaj za balans.",
+    "Zmaj": "Ambicija, harizma i ‘velika’ energija.",
+    "Zmija": "Intuicija, strategija i misterioznost.",
+    "Konj": "Sloboda, energija i direktnost.",
+    "Koza": "Kreativnost, empatija i nežna priroda.",
+    "Majmun": "Duhovitost, inteligencija i improvizacija.",
+    "Petao": "Perfekcionizam, disciplina i stav.",
+    "Pas": "Lojalnost, pravednost i zaštitnički duh.",
+    "Svinja": "Toplina, velikodušnost i uživanje u životu.",
+  }[sign] ?? "Karakteristična energija znaka.";
+
+  return "$base Dominantni element: $element.";
+}
 
   
 }
