@@ -20,12 +20,13 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
   // Lista stranica - koristimo prave klase gde ih imamo
-final List<Widget> _pages = [
-    CalculatorPage(),
-    HistoryPage(), // Ovo ćemo sledeće srediti
-    AscendantPage(), // OVDE MORA DA STOJI OVA KLASA
-    ChineseZodiacPage(), // DODATO
-  ];
+final List<Widget Function()> _pages = [
+  () => CalculatorPage(),
+  () => HistoryPage(),
+  () => AscendantPage(),
+  () => ChineseZodiacPage(),
+];
+
 
   @override
   Widget build(BuildContext context) {
@@ -42,16 +43,9 @@ final List<Widget> _pages = [
   ),
   drawer: AppDrawer(),
 
-  body: Container(
-    decoration: UiTokens.background(context),
-    child: SafeArea(
-      bottom: false,
-      child: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
-    ),
-  ),
+  body: SafeArea(
+  child: _pages[_currentIndex](),
+),
 
   bottomNavigationBar: BottomNavigationBar(
     type: BottomNavigationBarType.fixed,

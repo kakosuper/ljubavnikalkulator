@@ -13,12 +13,23 @@ class HistoryService {
     await prefs.setStringList(_key, historyJson);
   }
 
-  static Future<List<HistoryItem>> getHistory() async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String> historyJson = prefs.getStringList(_key) ?? [];
-    
-    return historyJson.map((item) => HistoryItem.fromMap(json.decode(item))).toList();
+static Future<List<HistoryItem>> getHistory() async {
+  final prefs = await SharedPreferences.getInstance();
+  final List<String> historyJson = prefs.getStringList(_key) ?? [];
+
+  final items = <HistoryItem>[];
+  for (final s in historyJson) {
+    try {
+      final map = json.decode(s) as Map<String, dynamic>;
+      items.add(HistoryItem.fromMap(map));
+    } catch (e) {
+      // preskoči pokvarene unose da ne sruše celu istoriju
+      // (možeš i da debugPrint ovde)
+    }
   }
+  return items;
+}
+
 
   static Future<void> clearHistory() async {
     final prefs = await SharedPreferences.getInstance();

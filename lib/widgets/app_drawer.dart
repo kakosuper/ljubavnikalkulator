@@ -1,9 +1,13 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/theme_provider.dart';
 import '../providers/language_provider.dart'; // Import provajdera za jezik
 import '../screens/info_screens.dart';
 import '../helpers/translate_helper.dart'; // Import t() funkcije
+import '../providers/notifications_provider.dart';
+import '../services/notification_service.dart';
+
 
 class AppDrawer extends StatelessWidget {
   @override
@@ -98,6 +102,7 @@ class AppDrawer extends StatelessWidget {
                           Navigator.pop(context);
                         },
                       ),
+
                     ],
                   ),
                 ),
@@ -106,13 +111,50 @@ class AppDrawer extends StatelessWidget {
           ),
 
           // NOTIFIKACIJE
-          _drawerItem(
-            icon: Icons.notifications_active,
-            text: t(context, "Podešavanja notifikacija"),
-            onTap: () {
-              // Ovde će ići logika za notifikacije
-            },
-          ),
+// NOTIFIKACIJE
+Consumer<NotificationsProvider>(
+  builder: (context, np, _) {
+    final isDark = NeumorphicTheme.isUsingDark(context);
+
+    return SwitchListTile(
+      value: np.enabled,
+      onChanged: (v) => np.setEnabled(v, context),
+      title: Text(
+        t(context, "Notifikacije"),
+        style: TextStyle(
+          color: isDark ? Colors.white : Colors.black,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      subtitle: Text(
+        t(context, np.enabled ? "Uključene" : "Isključene"),
+        style: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
+      ),
+      secondary: Icon(Icons.notifications_active, color: Colors.pink[400]),
+    );
+  },
+),
+
+
+// (opciono) TEST dugme da vidiš odmah
+_drawerItem(
+  icon: Icons.notifications,
+  text: t(context, "Test notifikacije (ODMAH)"),
+  onTap: () async {
+    Navigator.pop(context);
+    await NotificationService.testNow(context);
+  },
+),
+_drawerItem(
+  icon: Icons.bug_report,
+  text: t(context, "Test notifikacije (5s)"),
+  onTap: () async {
+    Navigator.pop(context);
+    await NotificationService.testIn5Seconds(context);
+  },
+),
+
+
 
           Divider(height: 30, thickness: 1),
 
