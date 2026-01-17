@@ -6,16 +6,20 @@ class LoadingOverlay extends StatefulWidget {
   final VoidCallback? onFinished;
   final String message;
 
+
+  final String lottieAsset;
+
   const LoadingOverlay({
     super.key,
     required this.message,
     this.onFinished,
+    this.lottieAsset = 'assets/love.json',
   });
 
   // --- STATIC OVERLAY API (da bi radilo LoadingOverlay.show/hide) ---
   static OverlayEntry? _entry;
 
-  static void show(BuildContext context, String message) {
+  static void show(BuildContext context, String message, {required String lottieAsset}) {
     if (_entry != null) return; // već prikazano
 
     _entry = OverlayEntry(
@@ -23,14 +27,19 @@ class LoadingOverlay extends StatefulWidget {
         color: Colors.black54,
         child: SafeArea(
           child: Center(
-            child: LoadingOverlay(message: message),
+            child: LoadingOverlay(
+            message: message,
+            // ✅ DODAJ
+            lottieAsset: lottieAsset ?? 'assets/love.json',
+          ),
+            
           ),
         ),
       ),
     );
 
     final overlay = Overlay.of(context, rootOverlay: true);
-    overlay.insert(_entry!);
+  overlay.insert(_entry!);
   }
 
   static void hide() {
@@ -96,10 +105,7 @@ class _LoadingOverlayState extends State<LoadingOverlay> {
             SizedBox(
               width: heartSize,
               height: heartSize,
-              child: Lottie.asset(
-                'assets/love.json',
-                fit: BoxFit.contain,
-              ),
+              child: Lottie.asset(widget.lottieAsset, fit: BoxFit.contain)
             ),
 
             const SizedBox(height: 20),

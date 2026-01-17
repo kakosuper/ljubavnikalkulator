@@ -162,7 +162,7 @@ double _lon = 20.4612;
               ),
               padding: const EdgeInsets.all(15),
               child: Text(
-                _getSignDescription(data['ascendant']!), 
+                t(context, _getSignDescription(data['ascendant']!)), 
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
               ),

@@ -274,7 +274,7 @@ class ContactPage extends StatelessWidget {
       scheme: 'mailto',
       path: 'kakosuper@gmail.com',
       queryParameters: {
-        'subject': t(context, 'Ljubavni Kalkulator - Podrška/Predlog'),
+        'subject': t(context, 'Ljubav i Zvezde - Podrška/Predlog'),
       },
     );
 

@@ -31,7 +31,11 @@ class _ChineseZodiacPageState extends State<ChineseZodiacPage> {
 
   void _calculateChinese() {
     final loadingMsg = t(context, "Konsultujemo drevne mudrace...", listen: false);
-    LoadingOverlay.show(context, loadingMsg);
+    LoadingOverlay.show(
+  context,
+  t(context, "Računam..."),
+  lottieAsset: 'assets/chineseLoad.json',
+);
     
     Future.delayed(const Duration(seconds: 2), () {
       if (!mounted) return;

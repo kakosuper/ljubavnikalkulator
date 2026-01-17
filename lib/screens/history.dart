@@ -60,10 +60,15 @@ class _HistoryPageState extends State<HistoryPage> {
       ),
       child: ExpansionTile(
         title: Text(
-          "${item.name1} ❤️ ${item.name2}",
+          "${t(context, item.name1)} ❤️ ${t(context, item.name2)}",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.pink),
         ),
-        subtitle: Text("${item.score}% - ${DateFormat('dd.MM.yyyy HH:mm').format(item.date)}"),
+        subtitle: Text(
+          t(
+            context,
+            "${item.score}% - ${DateFormat('dd.MM.yyyy HH:mm').format(item.date)}",
+          ),
+        ),
         trailing: Icon(Icons.keyboard_arrow_down, color: Colors.pink[200]),
         children: [
           Padding(
@@ -72,12 +77,15 @@ class _HistoryPageState extends State<HistoryPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "${t(context, "Rezultat")}: ${item.message}",
+                  "${t(context, "Rezultat")}: ${t(context, item.message)}",
                   style: TextStyle(fontStyle: FontStyle.italic),
                 ),
                 if (isAdvanced) ...[
                   Divider(),
-                  Text("Astro Podaci:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  Text(
+                    t(context, "Astro podaci:"),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
                   SizedBox(height: 5),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -100,7 +108,7 @@ class _HistoryPageState extends State<HistoryPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(name, style: TextStyle(fontSize: 10, color: Colors.pink[300])),
+        Text(t(context, name), style: TextStyle(fontSize: 10, color: Colors.pink[300])),
         Text("${t(context, "S")}: ${t(context, s ?? "")}", style: TextStyle(fontSize: 11)),
         Text("${t(context, "A")}: ${t(context, a ?? "")}", style: TextStyle(fontSize: 11)),
         Text("${t(context, "M")}: ${t(context, m ?? "")}", style: TextStyle(fontSize: 11)),

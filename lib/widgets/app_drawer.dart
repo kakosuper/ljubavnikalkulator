@@ -137,7 +137,7 @@ Consumer<NotificationsProvider>(
 
 
 // (opciono) TEST dugme da vidiš odmah
-_drawerItem(
+/*_drawerItem(
   icon: Icons.notifications,
   text: t(context, "Test notifikacije (ODMAH)"),
   onTap: () async {
@@ -152,7 +152,7 @@ _drawerItem(
     Navigator.pop(context);
     await NotificationService.testIn5Seconds(context);
   },
-),
+),*/
 
 
 

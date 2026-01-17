@@ -11,7 +11,7 @@ import '../services/history_service.dart';
 import 'dart:math';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vibration/vibration.dart';
+
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:cross_file/cross_file.dart';
@@ -91,150 +91,159 @@ _rewardedAd = null;
     });
   }
 
+
   Widget _buildShareCard(
-  BuildContext ctx, {
-  required String appName,
-  required String name1,
-  required String name2,
-  required int score,
-  required String title,
-  required String body,
-  required String tip,
-  required List<String> highlights,
-  required Map<String, int> breakdown,
-}) {
-  return Neumorphic(
-    style: NeumorphicStyle(
-      depth: 6,
-      boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(20)),
-      color: NeumorphicTheme.baseColor(ctx),
-    ),
-    padding: const EdgeInsets.all(16),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          appName,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.5,
-            color: Colors.pink[700],
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(t(ctx, "Rezultat"),
+    BuildContext ctx, {
+    required String appName,
+    required String name1,
+    required String name2,
+    required int score,
+    required String title,
+    required String body,
+    required String tip,
+    required List<String> highlights,
+    required Map<String, int> breakdown,
+  }) {
+    return Neumorphic(
+      style: NeumorphicStyle(
+        depth: 6,
+        boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(20)),
+        color: NeumorphicTheme.baseColor(ctx),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            appName,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 10),
-
-        Text("$name1 ❤ $name2",
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.5,
+              color: Colors.pink[700],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            t(ctx, "Rezultat"),
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.pink[500])),
-        const SizedBox(height: 8),
-
-        Text(title, style: TextStyle(fontSize: 16, color: Colors.pink[600], fontWeight: FontWeight.bold)),
-        const SizedBox(height: 10),
-
-        Center(
-          child: Text(
-            "$score%",
-            style: TextStyle(fontSize: 44, fontWeight: FontWeight.bold, color: Colors.pink[400]),
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
-        ),
+          const SizedBox(height: 10),
 
-        const SizedBox(height: 10),
-        Text(body, style: const TextStyle(fontSize: 13)),
-        const SizedBox(height: 14),
-
-        Neumorphic(
-          style: NeumorphicStyle(
-            depth: -3,
-            boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(14)),
+          Text(
+            "$name1 ❤ $name2",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.pink[500]),
           ),
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(t(ctx, "Savet"), style: TextStyle(fontWeight: FontWeight.bold, color: Colors.pink[600])),
-              const SizedBox(height: 6),
-              Text(tip, style: const TextStyle(fontSize: 12)),
-            ],
-          ),
-        ),
-        const SizedBox(height: 14),
-
-        if (highlights.isNotEmpty) ...[
-          Text(t(ctx, "Zašto ovako?"), style: const TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          ...highlights.map((x) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Text("• $x", style: const TextStyle(fontSize: 12)),
-              )),
-          const SizedBox(height: 12),
-        ],
 
-        Text(t(ctx, "Raspodela"), style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        ...breakdown.entries.map((e) {
-          final v = e.value;
-          final sign = v >= 0 ? "+$v" : "$v";
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Text(
+            t(ctx, title),
+            style: TextStyle(fontSize: 16, color: Colors.pink[600], fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+
+          Center(
+            child: Text(
+              "$score%",
+              style: TextStyle(fontSize: 44, fontWeight: FontWeight.bold, color: Colors.pink[400]),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+          Text(t(ctx, body), style: const TextStyle(fontSize: 13)),
+          const SizedBox(height: 14),
+
+          Neumorphic(
+            style: NeumorphicStyle(
+              depth: -3,
+              boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(14)),
+            ),
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(t(ctx, e.key), style: const TextStyle(fontSize: 12)),
                 Text(
-                  sign,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: v >= 0 ? Colors.green[700] : Colors.red[700],
-                  ),
+                  t(ctx, "Savet"),
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.pink[600]),
                 ),
+                const SizedBox(height: 6),
+                Text(t(ctx, tip), style: const TextStyle(fontSize: 12)),
               ],
             ),
-          );
-        }).toList(),
+          ),
+          const SizedBox(height: 14),
 
-        const SizedBox(height: 12),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: Text(
-            "Otvori $appName\nUnesi 2 imena • tapni „Izračunaj“",
-            textAlign: TextAlign.center,
-            softWrap: true,
-            style: TextStyle(
-              fontSize: 11,
-              height: 1.25,
-              color: Colors.pink[700],
-              fontWeight: FontWeight.w600,
+          if (highlights.isNotEmpty) ...[
+            Text(t(ctx, "Zašto ovako?"), style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            ...highlights.map(
+              (x) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text(t(ctx, "• $x"), style: const TextStyle(fontSize: 12)),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          Text(t(ctx, "Raspodela"), style: const TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          ...breakdown.entries.map((e) {
+            final v = e.value;
+            final sign = v >= 0 ? "+$v" : "$v";
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(t(ctx, e.key), style: const TextStyle(fontSize: 12)),
+                  Text(
+                    sign,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: v >= 0 ? Colors.green[700] : Colors.red[700],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: Text(
+              // namerno bez appName u stringu (da ne ubijemo translate map sa dinamikom)
+              t(ctx, "Unesi 2 imena • tapni „Izračunaj“"),
+              textAlign: TextAlign.center,
+              softWrap: true,
+              style: TextStyle(
+                fontSize: 11,
+                height: 1.25,
+                color: Colors.pink[700],
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
-
-  Future<void> _calculate() async {
+  void _calculate() {
   final name1 = _name1Controller.text.trim();
   final name2 = _name2Controller.text.trim();
   if (name1.isEmpty || name2.isEmpty) return;
 
-  //HapticFeedback.lightImpact();
-buzz();
-
-  LoadingOverlay.show(context, t(context, "Mešamo osećanja...", listen: false));
+  LoadingOverlay.show(context, t(context, "Mešamo osećanja...", listen: false), lottieAsset: 'assets/love.json');
 
   Future.delayed(const Duration(seconds: 3), () async {
     if (!mounted) return;
-    //HapticFeedback.mediumImpact();
-buzz();
     LoadingOverlay.hide();
 
     // 0..100
@@ -290,8 +299,6 @@ buzz();
     } catch (e) {
       debugPrint("Greška pri snimanju: $e");
     }
-//HapticFeedback.heavyImpact();
-buzz();
 
     _showResult(
       finalScore,
@@ -304,12 +311,7 @@ buzz();
     );
   });
 }
-Future<void> buzz() async {
-  final has = await Vibration.hasVibrator() ?? false;
-  if (!has) return;
 
-  Vibration.vibrate(duration: 40); // kratko i jasno
-}
 
 // Dart 3 record return: (bonus, highlights)
 (int, List<String>) _calcAstroBonus() {
@@ -672,8 +674,8 @@ void _showResult(
   required String body,
   required List<String> highlights,
   required Map<String, int> breakdown,
-  required String name1,   // ✅ dodaj
-  required String name2,   // ✅ dodaj
+  required String name1,
+  required String name2,
 }) {
   final tip = _tipForScore(score);
 
@@ -682,34 +684,35 @@ void _showResult(
     builder: (ctx) => AlertDialog(
       backgroundColor: NeumorphicTheme.baseColor(context),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      content: Screenshot(
-  controller: _shot,
-  child: SingleChildScrollView(
-    child: _buildShareCard(
-      ctx,
-      appName: "Ljubav i Zvezde",
-      name1: name1,
-      name2: name2,
-      score: score,
-      title: title,
-      body: body,
-      tip: tip,
-      highlights: highlights,
-      breakdown: breakdown,
-    ),
-  ),
-),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ✅ deo koji se deli kao slika
+            Screenshot(
+              controller: _shot,
+              child: _buildShareCard(
+                ctx,
+                appName: t(ctx, "Ljubav i Zvezde"),
+                name1: name1,
+                name2: name2,
+                score: score,
+                title: title,
+                body: body,
+                tip: tip,
+                highlights: highlights,
+                breakdown: breakdown,
+              ),
+            ),
 
-      // ✅ dugmad dole (Share + OK)
-     
-      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-actions: [
-  Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Row(
-        children: [
-          Expanded(
+            const SizedBox(height: 14),
+
+            // ✅ dugmad (nisu u screenshotu)
+            Row(
+              children: [
+                
+                Expanded(
             child: NeumorphicButton(
               onPressed: () async {
                 final image = await _shot.capture(pixelRatio: 2.0);
@@ -740,53 +743,32 @@ actions: [
               ),
             ),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: NeumorphicButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              style: NeumorphicStyle(
-                depth: 4,
-                color: Colors.pink[50],
-                boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(14)),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Center(
-                child: Text(
-                  t(ctx, "OK"),
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.pink[700]),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: NeumorphicButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    style: NeumorphicStyle(
+                      depth: 4,
+                      color: Colors.pink[50],
+                      boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(14)),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Center(
+                      child: Text(
+                        t(ctx, "OK"),
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.pink[700]),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ),
-        ],
-      ),
-
-      const SizedBox(height: 12),
-
-      // ✅ Footer ide ispod dugmadi (nije u Row)
-
-      const SizedBox(height: 6),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6),
-        child: Text(
-          "Preuzmi aplikaciju i probaj i ti.",
-          textAlign: TextAlign.center,
-          softWrap: true,
-          style: const TextStyle(
-            fontSize: 10,
-            height: 1.2,
-            color: Color.fromARGB(137, 255, 233, 233),
-          ),
+          ],
         ),
       ),
-    ],
-  ),
-],
-
     ),
   );
 }
-
 
 
   @override

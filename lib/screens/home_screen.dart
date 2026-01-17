@@ -36,8 +36,8 @@ void initState() {
 
 void _loadBanner() {
   _bannerAd = BannerAd(
-    //adUnitId: 'ca-app-pub-2037911978579872/9729668205', // Tvoj ID
-    adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+    adUnitId: 'ca-app-pub-2037911978579872/9729668205', // Tvoj ID
+    //adUnitId: 'ca-app-pub-3940256099942544/6300978111', // Test ID
     
     request: const AdRequest(),
     size: AdSize.banner,

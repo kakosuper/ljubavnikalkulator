@@ -206,20 +206,89 @@ static Map<String, String> getFullNatalDataUtc(DateTime utc, {required double la
 
   // Ako ti treba i dalje LoveCalculator procenat:
   static int calculateNameMatch(String a, String b) {
-    // (ostavi svoju logiku ako već imaš)
-    final s1 = _simpleScore(a);
-    final s2 = _simpleScore(b);
-    final diff = (s1 - s2).abs();
-    return (100 - (diff % 100)).clamp(1, 99);
+    // Stara formula (100 - diff%100) je davala previše visokih rezultata.
+    // Ovo je deterministički (isti par imena => isti rezultat), ali sa realnijom distribucijom.
+
+    final n1 = _normalizeName(a);
+    final n2 = _normalizeName(b);
+    if (n1.isEmpty || n2.isEmpty) return 0;
+
+    // da redosled ne menja rezultat
+    final pair = (n1.compareTo(n2) <= 0) ? '$n1|$n2' : '$n2|$n1';
+
+    // 3 pseudo-random broja (0..1), dobijena iz 32-bit hash-a
+    int h = _fnv1a32(pair);
+    final u1 = (h & 0xFFFFFFFF) / 4294967296.0;
+    h = _lcg32(h);
+    final u2 = (h & 0xFFFFFFFF) / 4294967296.0;
+    h = _lcg32(h);
+    final u3 = (h & 0xFFFFFFFF) / 4294967296.0;
+
+    // (u1+u2+u3)/3 “sabije” ekstreme, pa nema više 90% za skoro sve.
+    final shaped = (u1 + u2 + u3) / 3.0;
+
+    // baza: 25..98 (sredina oko 61.5)
+    final base = (25 + shaped * 73).round();
+
+    // mali bonus/penal po sličnosti slova (da ipak “ima smisla”)
+    final sim = _jaccardChars(n1, n2); // 0..1
+    final bonus = ((sim - 0.35) * 24).round(); // otprilike -8..+16
+
+    return (base + bonus).clamp(1, 99);
   }
 
-  static int _simpleScore(String s) {
+  // ---------- helpers for name match ----------
+
+  static String _normalizeName(String s) {
     final t = s.trim().toLowerCase();
-    int sum = 0;
-    for (final code in t.codeUnits) {
-      if (code >= 97 && code <= 122) sum += (code - 96);
+    final sb = StringBuffer();
+    for (final ch in t.runes) {
+      final c = String.fromCharCode(ch);
+      switch (c) {
+        case 'č':
+        case 'ć':
+          sb.write('c');
+          break;
+        case 'š':
+          sb.write('s');
+          break;
+        case 'ž':
+          sb.write('z');
+          break;
+        case 'đ':
+          sb.write('dj');
+          break;
+        default:
+          // ASCII slova
+          if (ch >= 97 && ch <= 122) sb.write(c);
+      }
     }
-    return sum;
+    return sb.toString();
+  }
+
+  static int _fnv1a32(String s) {
+    int hash = 0x811C9DC5; // 2166136261
+    final bytes = s.codeUnits;
+    for (final b in bytes) {
+      hash ^= (b & 0xFF);
+      hash = (hash * 0x01000193) & 0xFFFFFFFF; // 16777619
+    }
+    return hash;
+  }
+
+  static int _lcg32(int x) {
+    // klasičan LCG (Numerical Recipes)
+    return (1664525 * x + 1013904223) & 0xFFFFFFFF;
+  }
+
+  static double _jaccardChars(String a, String b) {
+    final sa = a.split('').toSet();
+    final sb = b.split('').toSet();
+    if (sa.isEmpty || sb.isEmpty) return 0.0;
+
+    final inter = sa.intersection(sb).length;
+    final uni = sa.union(sb).length;
+    return uni == 0 ? 0.0 : inter / uni;
   }
 static Map<String, String> getChineseZodiacByDate(DateTime birthDate) {
   // bitno: samo datum, bez vremena
