@@ -3,10 +3,15 @@
 <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+<uses-permission android:name="android.permission.VIBRATE"/>
     <application
         android:label="ljubavnikalkulator"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
+        <meta-data
+    android:name="com.google.android.gms.ads.APPLICATION_ID"
+    android:value="ca-app-pub-2037911978579872~3986386936"/>
 
         <meta-data
             android:name="io.flutter.embedding.android.EnableImpeller"

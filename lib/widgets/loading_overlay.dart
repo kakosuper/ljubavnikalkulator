@@ -75,6 +75,11 @@ class _LoadingOverlayState extends State<LoadingOverlay> {
   Widget build(BuildContext context) {
     final percent = _progress.clamp(0.0, 1.0);
 
+    // ✅ Responsive sizing (da srce bude "baš veliko", ali da stane svuda)
+    final screenW = MediaQuery.of(context).size.width;
+    final cardW = (screenW * 0.86).clamp(320.0, 420.0);
+    final heartSize = (cardW * 0.72).clamp(240.0, 320.0);
+
     return Neumorphic(
       style: NeumorphicStyle(
         depth: 10,
@@ -82,16 +87,22 @@ class _LoadingOverlayState extends State<LoadingOverlay> {
         boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(20)),
       ),
       child: Container(
-        width: 320,
+        width: cardW,
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Lottie.asset(
-              'assets/love.json',
-              height: 200,
+            // ❤️ veće srce
+            SizedBox(
+              width: heartSize,
+              height: heartSize,
+              child: Lottie.asset(
+                'assets/love.json',
+                fit: BoxFit.contain,
+              ),
             ),
-            const SizedBox(height: 30),
+
+            const SizedBox(height: 20),
             Text(
               widget.message,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -99,9 +110,9 @@ class _LoadingOverlayState extends State<LoadingOverlay> {
             ),
             const SizedBox(height: 10),
             Text("${(percent * 100).toInt()}%"),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 50),
+              padding: const EdgeInsets.symmetric(horizontal: 40),
               child: NeumorphicProgress(
                 percent: percent,
                 height: 15,

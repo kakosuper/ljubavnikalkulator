@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -13,7 +15,7 @@ import 'screens/OnboardingScreen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await MobileAds.instance.initialize();
   // init notifikacija + timezone (ti to već radiš u NotificationService.init)
   await NotificationService.init();
 
@@ -21,6 +23,10 @@ Future<void> main() async {
   final seenOnboarding = prefs.getBool('onboarding_done') ?? false;
   final notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
 
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
+  
   runApp(MyApp(
     seenOnboarding: seenOnboarding,
     notificationsEnabled: notificationsEnabled,
