@@ -9,6 +9,18 @@ import 'package:ljubavnikalkulator/widgets/fancy_appbar_title.dart';
 
 // STRANA O APLIKACIJI
 class AboutPage extends StatelessWidget {
+  Future<void> _openPrivacyPolicy(BuildContext context) async {
+    final uri = Uri.parse('https://www.margosdev.com/home/ljubav-i-zvezde');
+    try {
+      final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!ok) throw 'Could not launch $uri';
+    } catch (_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t(context, "Ne mogu da otvorim Privacy Policy link."))),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,6 +89,88 @@ class AboutPage extends StatelessWidget {
                           fit: BoxFit.contain,
                         ),
                       ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                // Privacy Policy link
+                Neumorphic(
+                  style: NeumorphicStyle(
+                    depth: 6,
+                    boxShape: NeumorphicBoxShape.roundRect(
+                      BorderRadius.circular(UiTokens.cardRadius),
+                    ),
+                    color: UiTokens.surface(context),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          t(context, "Privatnost"),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: UiTokens.textPrimary(context),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          t(
+                            context,
+                            "Pročitajte kako aplikacija koristi podatke i kako rade reklame.",
+                          ),
+                          style: TextStyle(
+                            fontSize: 13,
+                            height: 1.4,
+                            color: UiTokens.textSecondary(context),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        NeumorphicButton(
+                          onPressed: () => _openPrivacyPolicy(context),
+                          style: NeumorphicStyle(
+                            depth: 4,
+                            color: NeumorphicTheme.isUsingDark(context)
+                                ? UiTokens.accentPink
+                                : Colors.pink[50],
+                            boxShape: NeumorphicBoxShape.roundRect(
+                              BorderRadius.circular(UiTokens.buttonRadius),
+                            ),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 14,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.privacy_tip_outlined,
+                                size: 18,
+                                color: NeumorphicTheme.isUsingDark(context)
+                                    ? Colors.white
+                                    : UiTokens.accentPink,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                t(context, "Privacy Policy"),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.2,
+                                  color: NeumorphicTheme.isUsingDark(context)
+                                      ? Colors.white
+                                      : UiTokens.accentPink,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

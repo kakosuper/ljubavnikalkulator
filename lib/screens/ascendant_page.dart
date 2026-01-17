@@ -227,24 +227,51 @@ Widget _buildCityField() {
         return await AstroService.searchCities(search);
       },
       builder: (context, controller, focusNode) {
-        return TextField(
-          controller: controller, // Koristi isti kontroler ovde
-          focusNode: focusNode,
-          style: TextStyle(color: NeumorphicTheme.defaultTextColor(context)),
-          decoration: InputDecoration(
-            hintText: t(context, "Mesto rođenja"),
-            prefixIcon: Icon(Icons.location_city, color: Colors.pink[300]),
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.all(18),
-          ),
-        );
-      },
+  final isDark = NeumorphicTheme.isUsingDark(context);
+
+  return TextField(
+    controller: controller,
+    focusNode: focusNode,
+    cursorColor: isDark ? Colors.white : Colors.black,
+    style: TextStyle(
+      color: isDark ? Colors.white : Colors.black, // ✅ boja unetog teksta
+      fontSize: 14,
+    ),
+    decoration: InputDecoration(
+      hintText: t(context, "Mesto rođenja"),
+      hintStyle: TextStyle(
+        color: isDark ? Colors.white60 : Colors.black54, // ✅ hint uvek čitljiv
+      ),
+      prefixIcon: Icon(Icons.location_city, color: Colors.pink[300]),
+      border: InputBorder.none,
+      contentPadding: const EdgeInsets.all(18),
+    ),
+  );
+},
       itemBuilder: (context, city) {
-        return ListTile(
-          tileColor: NeumorphicTheme.baseColor(context),
-          title: Text(city['name'], style: TextStyle(color: NeumorphicTheme.defaultTextColor(context))),
-        );
-      },
+  final isDark = NeumorphicTheme.isUsingDark(context);
+
+  return ListTile(
+    tileColor: NeumorphicTheme.baseColor(context),
+    title: Text(
+      city['name'],
+      style: TextStyle(
+        color: isDark ? Colors.white : Colors.black, // ✅ tekst u listi
+        fontSize: 14,
+      ),
+    ),
+    subtitle: (city['country'] != null)
+        ? Text(
+            "${city['country']}",
+            style: TextStyle(
+              color: isDark ? Colors.white70 : Colors.black54,
+              fontSize: 12,
+            ),
+          )
+        : null,
+  );
+},
+
       onSelected: (city) {
         setState(() {
           _selectedCity = city['name'];
@@ -253,10 +280,17 @@ Widget _buildCityField() {
           _lon = city['lon'];
         });
       },
-      emptyBuilder: (context) => Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text(t(context, "Grad nije pronađen. Probaj latinično.")),
-      ),
+      emptyBuilder: (context) {
+  final isDark = NeumorphicTheme.isUsingDark(context);
+  return Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Text(
+      t(context, "Grad nije pronađen. Probaj latinično."),
+      style: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
+    ),
+  );
+},
+
     ),
   );
 }
@@ -275,6 +309,29 @@ Widget _buildCityField() {
               height: 200,
               errorBuilder: (c, e, s) => Icon(Icons.auto_awesome, size: 100, color: Colors.pink[200]),
             ),
+
+            const SizedBox(height: 10),
+NeumorphicButton(
+  onPressed: _showAstroInfoModal,
+  style: NeumorphicStyle(
+    depth: 3,
+    boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(14)),
+    color: Colors.pink[50],
+  ),
+  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+  child: Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(Icons.info_outline, color: Colors.pink[400], size: 18),
+      const SizedBox(width: 8),
+      Text(
+        t(context, "Šta je Sun/Moon/Asc i zašto lokacija?"),
+        style: TextStyle(color: Colors.pink[700], fontWeight: FontWeight.bold, fontSize: 12),
+      ),
+    ],
+  ),
+),
+
             
 const SizedBox(height: 20),
             _buildPickerCard(
@@ -319,6 +376,105 @@ const SizedBox(height: 20),
       ),
     );
   }
+
+  void _showAstroInfoModal() {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (ctx) {
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Neumorphic(
+            style: NeumorphicStyle(
+              depth: 6,
+              boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(22)),
+              color: NeumorphicTheme.baseColor(ctx),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Colors.pink[400]),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            t(ctx, "Šta je Sun/Moon/Asc i zašto lokacija?"),
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          icon: const Icon(Icons.close),
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    _infoBlock(ctx, "Sun (Sunce)",
+                        "Osnovni identitet i stil. Kako ‘sijaš’ i kako te ljudi najčešće vide na prvu loptu."),
+
+                    _infoBlock(ctx, "Moon (Mesec)",
+                        "Emocije i reakcije. Šta ti treba da se osećaš sigurno i kako procesiraš stres."),
+
+                    _infoBlock(ctx, "Asc (Podznak)",
+                        "Prvi utisak, ponašanje, ‘maskica’ koju nosiš u svetu. Najviše zavisi od vremena rođenja."),
+
+                    _infoBlock(ctx, "Zašto lokacija i tačno vreme?",
+                        "Zbog Zemljine rotacije i lokalnog horizonta. Ascendent se menja približno na svaka ~2 sata, a ponekad i brže, pa mala razlika u vremenu ili mestu može promeniti podznak."),
+
+                    const SizedBox(height: 10),
+                    Text(
+                      t(ctx, "Napomena"),
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.pink[400]),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      t(ctx, "Različiti izvori mogu dati malo različite rezultate zbog metoda, vremenskih zona i zaokruživanja (posebno blizu granica)."),
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
+Widget _infoBlock(BuildContext ctx, String title, String body) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Neumorphic(
+      style: NeumorphicStyle(
+        depth: -3,
+        boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(16)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              t(ctx, title),
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.pink[400]),
+            ),
+            const SizedBox(height: 6),
+            Text(t(ctx, body), style: const TextStyle(fontSize: 12)),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 
  Widget _buildPickerCard({
   required String title,
