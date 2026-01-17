@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../helpers/translate_helper.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
@@ -9,6 +10,12 @@ import 'package:ljubavnikalkulator/widgets/fancy_appbar_title.dart';
 
 // STRANA O APLIKACIJI
 class AboutPage extends StatelessWidget {
+  Future<bool> _privacyOptionsRequired() async {
+    final status = await ConsentInformation.instance
+        .getPrivacyOptionsRequirementStatus();
+    return status == PrivacyOptionsRequirementStatus.required;
+  }
+
   Future<void> _openPrivacyPolicy(BuildContext context) async {
     final uri = Uri.parse('https://www.margosdev.com/home/ljubav-i-zvezde');
     try {
@@ -17,6 +24,30 @@ class AboutPage extends StatelessWidget {
     } catch (_) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(t(context, "Ne mogu da otvorim Privacy Policy link."))),
+      );
+    }
+  }
+
+  Future<void> _openPrivacyOptions(BuildContext context) async {
+    try {
+      ConsentForm.showPrivacyOptionsForm((formError) {
+        if (formError != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                t(context, "Ne mogu da otvorim Privacy options. Pokušaj ponovo."),
+              ),
+            ),
+          );
+        }
+      });
+    } catch (_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            t(context, "Ne mogu da otvorim Privacy options. Pokušaj ponovo."),
+          ),
+        ),
       );
     }
   }
@@ -169,6 +200,58 @@ class AboutPage extends StatelessWidget {
                               ),
                             ],
                           ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        // Privacy options (UMP) – prikazuj samo ako je required
+                        FutureBuilder<bool>(
+                          future: _privacyOptionsRequired(),
+                          builder: (context, snap) {
+                            final required = snap.data == true;
+                            if (!required) return const SizedBox.shrink();
+
+                            return NeumorphicButton(
+                              onPressed: () => _openPrivacyOptions(context),
+                              style: NeumorphicStyle(
+                                depth: 4,
+                                color: NeumorphicTheme.isUsingDark(context)
+                                    ? UiTokens.accentPink
+                                    : Colors.pink[50],
+                                boxShape: NeumorphicBoxShape.roundRect(
+                                  BorderRadius.circular(UiTokens.buttonRadius),
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 14,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.tune,
+                                    size: 18,
+                                    color: NeumorphicTheme.isUsingDark(context)
+                                        ? Colors.white
+                                        : UiTokens.accentPink,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    t(context, "Privacy options"),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.2,
+                                      color: NeumorphicTheme.isUsingDark(context)
+                                          ? Colors.white
+                                          : UiTokens.accentPink,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),

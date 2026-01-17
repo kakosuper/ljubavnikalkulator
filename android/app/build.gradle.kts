@@ -16,7 +16,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.ljubavnikalkulator"
+    namespace = "com.margosdev.ljubavizvezde"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
@@ -31,7 +31,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.ljubavnikalkulator"
+        applicationId = "com.margosdev.ljubavizvezde"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutterVersionCode.toInt()

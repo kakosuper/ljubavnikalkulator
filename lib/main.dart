@@ -15,7 +15,7 @@ import 'screens/OnboardingScreen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await MobileAds.instance.initialize();
+  //await MobileAds.instance.initialize();
   // init notifikacija + timezone (ti to već radiš u NotificationService.init)
   await NotificationService.init();
 
@@ -32,6 +32,66 @@ Future<void> main() async {
     notificationsEnabled: notificationsEnabled,
   ));
 }
+class ConsentGate extends StatefulWidget {
+  final Widget child;
+  const ConsentGate({super.key, required this.child});
+
+  @override
+  State<ConsentGate> createState() => _ConsentGateState();
+}
+
+class _ConsentGateState extends State<ConsentGate> {
+  bool _ready = false;
+  bool _adsInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _gatherConsentThenInitAds();
+  }
+
+  Future<void> _gatherConsentThenInitAds() async {
+    // 1) UMP: traži update consent info na SVAKOM startu
+    final params = ConsentRequestParameters();
+
+    ConsentInformation.instance.requestConsentInfoUpdate(
+      params,
+      () async {
+        // 2) UMP: učitaj i prikaži formu ako je potrebno
+        ConsentForm.loadAndShowConsentFormIfRequired((formError) async {
+          // Ako je error, nije smak sveta. UMP može imati prethodni consent.
+          await _maybeInitAds();
+          if (mounted) setState(() => _ready = true);
+        });
+      },
+      (FormError error) async {
+        // Consent update fail. I dalje probaj sa prethodnim statusom.
+        await _maybeInitAds();
+        if (mounted) setState(() => _ready = true);
+      },
+    );
+  }
+
+  Future<void> _maybeInitAds() async {
+    // Pre requestovanja reklama proveri da li smeš da tražiš ads
+    final canRequest = await ConsentInformation.instance.canRequestAds();
+
+    if (canRequest && !_adsInitialized) {
+      _adsInitialized = true;
+      await MobileAds.instance.initialize();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_ready) return widget.child;
+
+    // “Splash” dok UMP odradi svoje
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
+    );
+  }
+}
 
 class MyApp extends StatelessWidget {
   final bool seenOnboarding;
@@ -42,6 +102,8 @@ class MyApp extends StatelessWidget {
     required this.seenOnboarding,
     required this.notificationsEnabled,
   });
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -75,10 +137,16 @@ class MyApp extends StatelessWidget {
               intensity: 0.5,
             ),
 
-            home: seenOnboarding ? HomeScreen() : OnboardingScreen(),
+            home: ConsentGate(
+  child: seenOnboarding ? HomeScreen() : OnboardingScreen(),
+),
           );
+          
         },
+        
       ),
+      
     );
+    
   }
 }

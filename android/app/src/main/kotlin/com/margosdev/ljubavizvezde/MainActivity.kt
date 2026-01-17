@@ -1,4 +1,4 @@
-package com.example.ljubavnikalkulator
+package com.margosdev.ljubavizvezde
 
 import io.flutter.embedding.android.FlutterActivity
 
